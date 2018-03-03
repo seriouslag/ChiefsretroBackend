@@ -50,7 +50,7 @@ public class StripeService {
         });
     }
 
-    public void createDispute(Dispute dispute) {
+    public static void createDispute(Dispute dispute) {
         try {
             DatabaseReference ref = database.getReference("disputes/");
             Map<String, Object> disputeUpdates = new HashMap<>();
@@ -61,7 +61,7 @@ public class StripeService {
         }
     }
 
-    public void createRefund(Refund refund) {
+    public static void createRefund(Refund refund) {
         try {
             DatabaseReference ref = database.getReference("refunds/");
             Map<String, Object> refundUpdates = new HashMap<>();
@@ -72,7 +72,7 @@ public class StripeService {
         }
     }
 
-    public void changeOrderStatus(String chargeId, String status, @Nullable String message) {
+    public static void changeOrderStatus(String chargeId, String status, @Nullable String message) {
         try {
             DatabaseReference ref = database.getReference("charges/" + chargeId);
             ref.addListenerForSingleValueEvent(new ValueEventListener() {
