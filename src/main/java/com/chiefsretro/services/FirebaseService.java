@@ -1,31 +1,22 @@
 package com.chiefsretro.services;
 
+import com.chiefsretro.entities.DbProduct;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.database.*;
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
-import com.google.gson.reflect.TypeToken;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-
-import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.Map;
 
 @Service
 public class FirebaseService {
 
     private static FirebaseApp app;
     private static FirebaseApp adminApp;
-
     private static FirebaseDatabase database;
     private static FirebaseDatabase adminDatabase;
-
-
     private static DataSnapshot products;
     private static DataSnapshot adminProducts;
-
     private static boolean isInit = false;
 
     public static void init() {
@@ -42,8 +33,6 @@ public class FirebaseService {
         System.out.println("Firebase init");
     }
 
-
-
     @Scheduled(fixedRate=300000, initialDelay=1000)
     public void maintenance() {
         if(!isInit) {
@@ -51,9 +40,7 @@ public class FirebaseService {
         }
         System.out.println(new Date(System.currentTimeMillis()) + " Starting maintenance");
         orderCheck();
-        compareDatabases();
     }
-
 
     private static void orderCheck() {
         database = FirebaseDatabase.getInstance();
@@ -73,12 +60,11 @@ public class FirebaseService {
         });
     }
 
-    private void compareDatabases() {
+    public static void compareDatabases() {
         DatabaseReference product = database.getReference("products/");
         System.out.println(adminApp);
         System.out.println(adminDatabase);
         DatabaseReference adminProduct = adminDatabase.getReference("products/");
-
 
         product.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -108,46 +94,41 @@ public class FirebaseService {
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-
+                databaseError.toException().printStackTrace();
             }
         });
 
     }
 
-    private void compareSnapshots(DataSnapshot ds1, DataSnapshot ds2) {
+    private static void compareSnapshots(DataSnapshot ds1, DataSnapshot ds2) {
         try {
             System.out.println("comparing snapshots");
-            Gson g = new Gson();
-            JsonParser parser = new JsonParser();
-            JsonElement jsonElement1 = parser.parse(g.toJson(ds1.getValue()));
-            JsonElement jsonElement2 = parser.parse(g.toJson(ds2.getValue()));
 
-            if (!compareJSON(jsonElement1, jsonElement2)) {
-                equalizeDatabases(ds1, ds2);
-            } else {
-                System.out.println("Not equalizing");
+            try {
+                ArrayList<DbProduct> adminProductList = (ArrayList<DbProduct>) ds1.getValue();
+                ArrayList<DbProduct> appProductList = (ArrayList<DbProduct>) ds2.getValue();
+
+                if (!adminProductList.equals(appProductList)) {
+                    equalizeDatabases(ds1, ds2);
+                } else {
+                    System.out.println("Databases are equal");
+                }
+            } catch(ClassCastException e) {
+                System.out.println("ERROR in FIREBASE PRODUCT Database " + e.getMessage());
+
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private void equalizeDatabases(DataSnapshot defaultSnap, DataSnapshot adminSnap) {
+    private static void equalizeDatabases(DataSnapshot defaultSnap, DataSnapshot adminSnap) {
         System.out.println("Equalizing Databases");
-    }
 
-    private static boolean compareJSON(JsonElement je1, JsonElement je2) {
-        System.out.println("comparing json");
-        if(je1 != null && je2 != null) {
-            if(je1.isJsonObject() && je2.isJsonObject()) {
-                Gson g = new Gson();
-                Type mapType = new TypeToken<Map<String, Object>>(){}.getType();
-                Map<String, Object> firstMap = g.fromJson(je1, mapType);
-                Map<String, Object> secondMap = g.fromJson(je2, mapType);
 
-                return firstMap.equals(secondMap);
-            }
-        }
-        return false;
+
+        //after reset products
+        products = null;
+        adminProducts = null;
     }
 }
