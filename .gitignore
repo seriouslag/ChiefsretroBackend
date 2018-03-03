@@ -1,5 +1,8 @@
 target/
 !.mvn/wrapper/maven-wrapper.jar
+props.txt
+src/main/resources/firebase.json
+src/main/resources/application.properties
 
 ### STS ###
 .apt_generated
@@ -22,3 +25,4 @@ nbbuild/
 dist/
 nbdist/
 .nb-gradle/
+

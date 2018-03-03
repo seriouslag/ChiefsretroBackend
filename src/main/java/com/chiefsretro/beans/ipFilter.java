@@ -11,7 +11,7 @@ import java.io.IOException;
 
 @Configuration
 public class ipFilter extends OncePerRequestFilter{
-    private String[] allowedIps = {"0:0:0:0:0:0:0:1", "127.0.0.1", "0.0.0.0",
+    private static String[] allowedIps = {"0:0:0:0:0:0:0:1", "127.0.0.1", "0.0.0.0",
             //Stripe
             "50.18.212.157", "50.18.212.223", "52.25.214.31",
             "52.26.11.205", "52.26.14.11", "52.8.19.58", "52.8.8.189", "54.149.153.72", "54.187.182.230",
@@ -47,6 +47,10 @@ public class ipFilter extends OncePerRequestFilter{
         }
 
         System.out.println(ipAddress + " was blocked.");
-        return false;
+
+
+        //RETURN TRUE IN DEV
+        //RETURN FALSE IN PROD
+        return true;
     }
 }
